@@ -1,0 +1,92 @@
+<!--
+  no viewBox on purpose: a viewBox with preserveAspectRatio would scale this
+  uniformly and letterbox the page into a square instead of filling the window.
+  without one, user units are plain css pixels and 100% means 100%.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+  <rect width="100%" height="100%" fill="#050507"/>
+  <text x="50%" y="50%" fill="#6d6d7c" font-size="16" text-anchor="middle"
+        dominant-baseline="middle"
+        font-family="Comic Sans MS, Comic Sans, cursive">loading m's games and stuff…</text>
+
+  <script><![CDATA[
+  /*
+    this file is the jsDelivr entry point.
+
+    jsDelivr serves every .html as `Content-Type: text/plain` with nosniff, so
+    .../index.html renders as source code instead of running. it serves .svg as
+    `image/svg+xml`, and scripts run when an svg is opened directly - so the svg
+    becomes the page: it pulls index.html in as data (jsDelivr sends
+    `Access-Control-Allow-Origin: *`) and renders it in a full-viewport frame
+    that inherits this origin.
+
+    the site is reachable at:
+      https://cdn.jsdelivr.net/gh/<user>/<repo>@main/svg/index.svg
+
+    and index.html still works normally on GitHub Pages, where html is served
+    as html in the first place.
+  */
+  (function () {
+    var SVGNS = "http://www.w3.org/2000/svg";
+    var XHTMLNS = "http://www.w3.org/1999/xhtml";
+    var here = new URL("../", location.href).href; // the repo root, on the cdn
+
+    function fail(msg) {
+      var t = document.querySelector("text");
+      if (t) t.textContent = msg;
+    }
+
+    // ask the parser whether a <base> tag is really there - a substring check
+    // gets fooled by page source that merely mentions the tag
+    function hasBase(html) {
+      try {
+        return !!new DOMParser().parseFromString(html, "text/html").querySelector("base");
+      } catch (e) {
+        return true; // can't tell: leave the html alone
+      }
+    }
+
+    function ensureBase(html, href) {
+      if (hasBase(html)) return html;
+      var tag = '<base href="' + href + '">';
+      return /<head[^>]*>/i.test(html)
+        ? html.replace(/<head[^>]*>/i, function (m) { return m + tag; })
+        : tag + html;
+    }
+
+    fetch(here + "index.html", { cache: "no-store" })
+      .then(function (r) {
+        if (!r.ok) throw new Error(r.status + " " + r.statusText);
+        return r.text();
+      })
+      .then(function (html) {
+        // the frame's relative paths (style.css, games/, games.json) have to
+        // resolve to the cdn root, not to /svg/
+        html = ensureBase(html, here);
+
+        var holder = document.createElementNS(SVGNS, "foreignObject");
+        holder.setAttribute("x", "0");
+        holder.setAttribute("y", "0");
+        holder.setAttribute("width", "100%");
+        holder.setAttribute("height", "100%");
+
+        var frame = document.createElementNS(XHTMLNS, "iframe");
+        frame.setAttribute("title", "m's games and stuff");
+        frame.setAttribute("style",
+          "display:block;width:100%;height:100%;border:0;margin:0;background:#050507");
+
+        holder.appendChild(frame);
+        document.documentElement.appendChild(holder);
+
+        // keep the address bar on the svg url - no navigation, no blob url
+        frame.srcdoc = html;
+
+        var rect = document.querySelector("rect");
+        if (rect) rect.remove();
+        var text = document.querySelector("text");
+        if (text) text.remove();
+      })
+      .catch(function (err) { fail("could not load the page: " + err.message); });
+  })();
+  ]]></script>
+</svg>

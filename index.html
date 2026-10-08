@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="dark" />
+<title>m's games and stuff</title>
+<link rel="stylesheet" href="style.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>" />
+</head>
+<body>
+
+<header class="hero">
+  <h1>m's games and stuff</h1>
+</header>
+
+<!-- filled in from games.json, alphabetical -->
+<main class="grid" id="grid"></main>
+<p class="empty-note" id="note" hidden></p>
+
+<!-- games open in here, on top of the hub -->
+<div class="game-overlay" id="overlay" aria-hidden="true">
+  <iframe id="frame" title="game" allow="autoplay; fullscreen; gamepad; encrypted-media" allowfullscreen></iframe>
+</div>
+
+<script>
+const grid = document.getElementById("grid");
+const note = document.getElementById("note");
+const overlay = document.getElementById("overlay");
+const frame = document.getElementById("frame");
+
+// a game that already ships its own <base> (pulling assets from a cdn) keeps it.
+// the check has to be a real parse: page source can contain the literal tag text.
+function hasBase(html) {
+  try {
+    return !!new DOMParser().parseFromString(html, "text/html").querySelector("base");
+  } catch (err) {
+    return true;
+  }
+}
+
+function withBase(html, href) {
+  if (hasBase(html)) return html;
+  var tag = '<base href="' + href + '">';
+  return /<head[^>]*>/i.test(html)
+    ? html.replace(/<head[^>]*>/i, function (m) { return m + tag; })
+    : tag + html;
+}
+
+function openGame(src, name) {
+  overlay.classList.add("open");
+  overlay.setAttribute("aria-hidden", "false");
+  document.body.classList.add("playing");
+  // cosmetic only: nothing reads this back, so a refresh always lands on the hub
+  try { history.replaceState(null, "", "#" + encodeURIComponent(name)); } catch (err) {}
+
+  // a game is fetched and then handed to the frame rather than pointed at with
+  // src, because a cdn (jsDelivr) serves .html as text/plain - an iframe pointed
+  // at it would show the game's source code instead of running it.
+  var url = new URL(src, document.baseURI);
+  var dir = new URL("./", url).href;
+  frame.removeAttribute("srcdoc");
+  frame.removeAttribute("src");
+
+  fetch(url.href, { cache: "no-store" })
+    .then(function (r) {
+      if (!r.ok) throw new Error(r.status);
+      return r.text();
+    })
+    .then(function (html) {
+      // the game's own relative files (sprites, music) sit beside it
+      frame.srcdoc = withBase(html, dir);
+    })
+    .catch(function () {
+      frame.src = src; // plain navigation - the local file:// case, mostly
+    });
+}
+
+function decorate(card) {
+  // liquid glass: the specular highlight tracks the pointer
+  card.addEventListener("pointermove", (e) => {
+    const r = card.getBoundingClientRect();
+    card.style.setProperty("--mx", ((e.clientX - r.left) / r.width) * 100 + "%");
+    card.style.setProperty("--my", ((e.clientY - r.top) / r.height) * 100 + "%");
+    card.style.setProperty("--tilt-y", (((e.clientX - r.left) / r.width) - .5) * 6 + "deg");
+    card.style.setProperty("--tilt-x", (((e.clientY - r.top) / r.height) - .5) * -6 + "deg");
+  });
+
+  card.addEventListener("pointerleave", () => {
+    card.style.setProperty("--tilt-x", "0deg");
+    card.style.setProperty("--tilt-y", "0deg");
+    card.style.setProperty("--mx", "50%");
+    card.style.setProperty("--my", "0%");
+  });
+
+  // open the game right here, no page change
+  card.addEventListener("click", (e) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return; // let cmd-click open a tab
+    e.preventDefault();
+    openGame(card.dataset.game, card.dataset.slug);
+  });
+}
+
+function buildCard(g, i) {
+  const card = document.createElement("a");
+  card.className = "card";
+  card.href = g.game;              // still a real link: middle-click / new tab works
+  card.dataset.game = g.game;
+  card.dataset.slug = g.slug;
+  card.style.animationDelay = (i * 80) + "ms";
+
+  // a picture sitting next to the html with the same name
+  if (g.img) {
+    const thumb = document.createElement("div");
+    thumb.className = "thumb has-img";
+    thumb.style.backgroundImage = 'url("' + g.img + '")';
+    card.appendChild(thumb);
+  }
+
+  const title = document.createElement("h2");
+  title.textContent = g.name;
+  card.appendChild(title);
+
+  decorate(card);
+  return card;
+}
+
+// cache-buster so a freshly added game shows up on the next refresh, even behind a CDN
+fetch("games.json?v=" + Date.now(), { cache: "no-store" })
+  .then((r) => {
+    if (!r.ok) throw new Error("games.json -> " + r.status);
+    return r.json();
+  })
+  .then((games) => {
+    games.sort((a, b) => a.name.localeCompare(b.name));
+    if (!games.length) {
+      note.textContent = "no games yet — drop a .html file into games/ and refresh";
+      note.hidden = false;
+      return;
+    }
+    games.forEach((g, i) => grid.appendChild(buildCard(g, i)));
+  })
+  .catch(() => {
+    note.textContent = "couldn't read the games list — run start.bat (or serve.py), then refresh";
+    note.hidden = false;
+  });
+</script>
+</body>
+</html>

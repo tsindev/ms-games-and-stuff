@@ -1,0 +1,216 @@
+:root {
+  --black: #050507;
+  --ink: #f2f2f6;
+
+  --glass: linear-gradient(140deg,
+      rgba(255, 255, 255, .085) 0%,
+      rgba(255, 255, 255, .028) 40%,
+      rgba(255, 255, 255, .012) 60%,
+      rgba(255, 255, 255, .055) 100%);
+
+  /* outer drop + inner top-light + inner bottom-light = the glass slab */
+  --glass-shadow:
+    0 20px 55px rgba(0, 0, 0, .7),
+    0 2px 8px rgba(0, 0, 0, .5),
+    inset 0 1px 0 rgba(255, 255, 255, .22),
+    inset 0 -1px 0 rgba(255, 255, 255, .05),
+    inset 0 0 60px rgba(255, 255, 255, .025);
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; }
+
+body {
+  font-family: "Comic Sans MS", "Comic Sans", "Chalkboard SE", "Comic Neue", cursive;
+  background: var(--black);
+  color: var(--ink);
+  min-height: 100vh;
+  padding-bottom: 3rem;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- header ---------- */
+
+.hero {
+  text-align: center;
+  padding: 4.5rem 1rem 0;
+}
+
+.hero h1 {
+  font-size: clamp(2.1rem, 7vw, 4.4rem);
+  margin: 0;
+  letter-spacing: -.015em;
+  background: linear-gradient(180deg, #ffffff 0%, #dcd6ff 50%, #a49ac9 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 2px 18px rgba(150, 120, 255, .18));
+}
+
+/* ---------- glass cards ---------- */
+
+.grid {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 3rem 1.25rem 0;
+  display: grid;
+  gap: 1.6rem;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 360px));
+  justify-content: center;
+}
+
+/* only ever shows if the games list can't be read or there are no games */
+.empty-note {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  margin: 3rem auto 0;
+  padding: 0 1.5rem;
+  font-size: .95rem;
+  color: rgba(242, 242, 246, .45);
+}
+
+.card {
+  --mx: 50%;
+  --my: 0%;
+  --tilt-x: 0deg;
+  --tilt-y: 0deg;
+
+  position: relative;
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  overflow: hidden;
+  padding: 1rem 1rem 1.35rem;
+  border-radius: 26px;
+  text-align: center;
+
+  background: var(--glass);
+  border: 1px solid rgba(255, 255, 255, .15);
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  backdrop-filter: blur(22px) saturate(180%);
+
+  transform: perspective(900px) rotateX(var(--tilt-x)) rotateY(var(--tilt-y));
+  transition: transform .25s cubic-bezier(.2, .8, .3, 1),
+              box-shadow .3s ease,
+              border-color .3s ease;
+  animation: rise .6s backwards cubic-bezier(.2, 1, .3, 1);
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(22px) scale(.97); }
+  to   { opacity: 1; }
+}
+
+/* specular highlight that follows the pointer */
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(340px circle at var(--mx) var(--my),
+              rgba(255, 255, 255, .16), rgba(255, 255, 255, .04) 38%, transparent 62%);
+  opacity: .8;
+  transition: opacity .3s ease;
+  pointer-events: none;
+}
+
+/* the diagonal sheen sweep */
+.card::after {
+  content: "";
+  position: absolute;
+  top: 0; left: -60%;
+  width: 60%; height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .11), transparent);
+  transform: skewX(-18deg);
+  opacity: 0;
+  transition: opacity .3s ease;
+  pointer-events: none;
+}
+
+.card:hover, .card:focus-visible {
+  border-color: rgba(255, 255, 255, .3);
+  box-shadow:
+    0 30px 70px rgba(0, 0, 0, .8),
+    0 0 0 1px rgba(255, 255, 255, .05),
+    0 0 60px rgba(150, 120, 255, .14),
+    inset 0 1px 0 rgba(255, 255, 255, .34),
+    inset 0 -1px 0 rgba(255, 255, 255, .06);
+  outline: none;
+}
+
+.card:hover::before { opacity: 1; }
+.card:hover::after  { opacity: 1; animation: sweep .85s ease-out; }
+
+@keyframes sweep {
+  from { left: -60%; }
+  to   { left: 120%; }
+}
+
+.card:active { transform: perspective(900px) scale(.985); }
+
+/* thumbnail: an image sitting next to the game html, same name.
+   no picture file = no slot, the card is just its title. */
+.card .thumb { display: none; }
+
+.card .thumb.has-img {
+  display: block;
+  height: 172px;
+  border-radius: 18px;
+  margin-bottom: 1rem;
+  background-color: #0a0a0e;
+  background-size: cover;
+  background-position: center;
+  border: 1px solid rgba(255, 255, 255, .08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12);
+  filter: drop-shadow(0 3px 14px rgba(0, 0, 0, .5));
+}
+
+.card h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  letter-spacing: -.01em;
+}
+
+/* ---------- the game opens here, in-page ----------.
+   the only way back to the hub is a refresh. */
+
+body.playing { overflow: hidden; }
+
+.game-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: none;
+  background: #000;
+}
+
+.game-overlay.open { display: block; }
+
+.game-overlay iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+  background: #000;
+}
+
+/* ---------- no backdrop-filter: fall back to solid frosted slabs ---------- */
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .card {
+    background: linear-gradient(140deg, rgba(34, 34, 44, .95), rgba(14, 14, 18, .96));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .card { transform: none !important; }
+}
