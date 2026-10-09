@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="dark" />
+<title>proxy (beta)</title>
+<link rel="stylesheet" href="proxy.css" />
+</head>
+<body>
+
+<header class="chrome">
+  <div class="row">
+
+    <button type="button" class="home" id="home">go home</button>
+
+    <div class="tabstrip" id="tabstrip"></div>
+
+    <button type="button" class="newtab" id="newtab" title="new tab">+</button>
+
+    <p class="state" id="state">starting…</p>
+  </div>
+
+  <div class="row">
+    <div class="controls">
+      <button type="button" data-act="back">back</button>
+      <button type="button" data-act="forward">fwd</button>
+      <button type="button" data-act="reload">reload</button>
+    </div>
+
+    <form class="omni loading" id="omni" autocomplete="off">
+      <input id="url" type="text" placeholder="type a website, then enter"
+             spellcheck="false" autocapitalize="off" autocorrect="off"
+             inputmode="url" enterkeyhint="go" aria-label="address" />
+    </form>
+  </div>
+</header>
+
+<!-- every tab is an iframe in here; the worker rewrites whatever they ask for -->
+<div class="stage" id="stage">
+
+  <section class="home-page" id="homePage">
+    <h2>where to?</h2>
+    <div class="shortcuts">
+      <button type="button" class="shortcut" data-url="https://aether.ist/">
+        <span class="what">movies</span>
+        <span class="where">aether.ist</span>
+      </button>
+      <button type="button" class="shortcut" data-url="https://youtube.com/">
+        <span class="what">youtube</span>
+        <span class="where">youtube.com</span>
+      </button>
+      <button type="button" class="shortcut" data-url="https://tiktok.com/">
+        <span class="what">tiktok</span>
+        <span class="where">tiktok.com</span>
+      </button>
+    </div>
+    <p class="hint">or type any address up top</p>
+  </section>
+
+</div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

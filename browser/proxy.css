@@ -1,0 +1,324 @@
+/* browser/proxy.css - the hub's black glass, arranged as browser chrome */
+
+:root {
+  --black: #050507;
+  --ink: #f2f2f6;
+
+  --glass: linear-gradient(140deg,
+      rgba(255, 255, 255, .085) 0%,
+      rgba(255, 255, 255, .028) 40%,
+      rgba(255, 255, 255, .012) 60%,
+      rgba(255, 255, 255, .055) 100%);
+
+  --glass-shadow:
+    0 20px 55px rgba(0, 0, 0, .7),
+    0 2px 8px rgba(0, 0, 0, .5),
+    inset 0 1px 0 rgba(255, 255, 255, .22),
+    inset 0 -1px 0 rgba(255, 255, 255, .05),
+    inset 0 0 60px rgba(255, 255, 255, .025);
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; height: 100%; }
+
+body {
+  font-family: "Comic Sans MS", "Comic Sans", "Chalkboard SE", "Comic Neue", cursive;
+  background: var(--black);
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- chrome ---------- */
+
+.chrome {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid rgba(255, 255, 255, .09);
+  background: var(--glass);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  backdrop-filter: blur(22px) saturate(180%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .14);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  padding: .5rem .7rem;
+  min-width: 0;
+}
+
+.row + .row {
+  border-top: 1px solid rgba(255, 255, 255, .05);
+  padding-top: .5rem;
+}
+
+button {
+  font: inherit;
+  font-size: .82rem;
+  color: rgba(242, 242, 246, .78);
+  cursor: pointer;
+  padding: .36rem .72rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, .14);
+  background: rgba(255, 255, 255, .05);
+  transition: color .2s ease, background .2s ease, border-color .2s ease;
+}
+
+button:hover, button:focus-visible {
+  color: #fff;
+  background: rgba(255, 255, 255, .13);
+  border-color: rgba(255, 255, 255, .3);
+  outline: none;
+}
+
+button:active { transform: scale(.96); }
+
+/* the way back, deliberately the first thing up there */
+
+#home {
+  flex: 0 0 auto;
+  color: #fff;
+  border-color: rgba(255, 255, 255, .24);
+  background: linear-gradient(140deg, rgba(255, 255, 255, .14), rgba(255, 255, 255, .05));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .24);
+}
+
+/* ---------- tabs ---------- */
+
+.tabstrip {
+  flex: 1 1 auto;
+  display: flex;
+  gap: .3rem;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.tabstrip::-webkit-scrollbar { display: none; }
+
+.chip {
+  flex: 0 1 auto;
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  min-width: 0;
+  max-width: 200px;
+  padding: .3rem .35rem .3rem .75rem;
+  border-radius: 999px;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, .1);
+  background: rgba(255, 255, 255, .035);
+  transition: background .2s ease, border-color .2s ease;
+}
+
+.chip:hover { background: rgba(255, 255, 255, .08); }
+
+.chip.is-on {
+  border-color: rgba(255, 255, 255, .3);
+  background: linear-gradient(140deg, rgba(255, 255, 255, .16), rgba(255, 255, 255, .05));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), 0 0 24px rgba(150, 120, 255, .13);
+}
+
+.chip .label {
+  font-size: .8rem;
+  color: rgba(242, 242, 246, .66);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chip.is-on .label { color: #fff; }
+
+.chip .close {
+  flex: 0 0 auto;
+  font-size: .68rem;
+  padding: .1rem .45rem;
+  border: 0;
+  background: none;
+  color: rgba(242, 242, 246, .4);
+}
+
+.chip .close:hover { color: #fff; background: rgba(255, 255, 255, .14); }
+
+.newtab {
+  flex: 0 0 auto;
+  padding: .3rem .6rem;
+  font-size: .95rem;
+  line-height: 1;
+}
+
+/* ---------- address bar ---------- */
+
+.controls { flex: 0 0 auto; display: flex; gap: .3rem; }
+
+.omni {
+  flex: 1 1 auto;
+  min-width: 0;
+  position: relative;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, .14);
+  background: rgba(255, 255, 255, .04);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1);
+  transition: border-color .25s ease, box-shadow .25s ease;
+}
+
+.omni:focus-within {
+  border-color: rgba(255, 255, 255, .32);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .18), 0 0 26px rgba(150, 120, 255, .16);
+}
+
+/* while the proxy is still coming up */
+.omni.loading { opacity: .55; }
+.omni.loading::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, .1) 50%, transparent 80%);
+  animation: slide 1.2s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes slide {
+  from { transform: translateX(-60%); }
+  to   { transform: translateX(60%); }
+}
+
+.omni input {
+  font: inherit;
+  font-size: .88rem;
+  width: 100%;
+  padding: .4rem .95rem;
+  color: var(--ink);
+  background: none;
+  border: 0;
+  outline: none;
+}
+
+.omni input::placeholder { color: rgba(242, 242, 246, .32); }
+
+.state {
+  flex: 0 1 auto;
+  margin: 0;
+  max-width: 26ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: .72rem;
+  color: rgba(242, 242, 246, .4);
+}
+
+/* ---------- the stage ---------- */
+
+.stage {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  background: #fff;
+}
+
+.view {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: none;
+  background: #fff;
+}
+
+.view.is-on { display: block; }
+
+/* ---------- home ---------- */
+
+.home-page {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.6rem;
+  text-align: center;
+  padding: 2rem 1.25rem;
+  background: var(--black);
+}
+
+.home-page[hidden] { display: none; }
+
+.home-page h2 {
+  margin: 0;
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  letter-spacing: -.015em;
+  background: linear-gradient(180deg, #ffffff 0%, #dcd6ff 50%, #a49ac9 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.shortcuts {
+  display: grid;
+  gap: 1rem;
+  width: min(100%, 760px);
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+}
+
+.shortcut {
+  display: flex;
+  flex-direction: column;
+  gap: .35rem;
+  padding: 1.3rem 1rem;
+  border-radius: 22px;
+  text-align: center;
+  background: var(--glass);
+  border: 1px solid rgba(255, 255, 255, .15);
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  backdrop-filter: blur(22px) saturate(180%);
+  transition: transform .25s cubic-bezier(.2, .8, .3, 1), border-color .25s ease, box-shadow .25s ease;
+}
+
+.shortcut:hover, .shortcut:focus-visible {
+  transform: translateY(-3px);
+  border-color: rgba(255, 255, 255, .32);
+  box-shadow:
+    0 30px 70px rgba(0, 0, 0, .8),
+    inset 0 1px 0 rgba(255, 255, 255, .34),
+    0 0 60px rgba(150, 120, 255, .16);
+  outline: none;
+}
+
+.shortcut .what { font-size: 1.3rem; color: #fff; }
+.shortcut .where { font-size: .78rem; color: rgba(242, 242, 246, .42); }
+
+.hint {
+  margin: 0;
+  font-size: .82rem;
+  color: rgba(242, 242, 246, .34);
+}
+
+/* ---------- fallbacks ---------- */
+
+@media (max-width: 640px) {
+  .state { display: none; }
+  .chip { max-width: 120px; }
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .chrome { background: linear-gradient(140deg, rgba(34, 34, 44, .95), rgba(14, 14, 18, .96)); }
+  .shortcut { background: linear-gradient(140deg, rgba(34, 34, 44, .95), rgba(14, 14, 18, .96)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .shortcut:hover { transform: none; }
+}

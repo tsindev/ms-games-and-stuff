@@ -49,6 +49,61 @@ body {
   filter: drop-shadow(0 2px 18px rgba(150, 120, 255, .18));
 }
 
+/* ---------- proxy (beta) ---------- */
+
+.proxy-launch {
+  display: block;
+  margin: 2rem auto 0;
+  font: inherit;
+  font-size: 1rem;
+  color: #fff;
+  cursor: pointer;
+  padding: .55rem 1.6rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, .24);
+  background: linear-gradient(140deg, rgba(255, 255, 255, .16), rgba(255, 255, 255, .05));
+  box-shadow:
+    0 12px 34px rgba(0, 0, 0, .6),
+    inset 0 1px 0 rgba(255, 255, 255, .3),
+    0 0 34px rgba(150, 120, 255, .16);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  backdrop-filter: blur(18px) saturate(180%);
+  transition: transform .25s cubic-bezier(.2, .8, .3, 1), box-shadow .25s ease, border-color .25s ease;
+}
+
+.proxy-launch:hover, .proxy-launch:focus-visible {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, .4);
+  box-shadow:
+    0 20px 46px rgba(0, 0, 0, .7),
+    inset 0 1px 0 rgba(255, 255, 255, .4),
+    0 0 60px rgba(150, 120, 255, .22);
+  outline: none;
+}
+
+.proxy-launch:active { transform: scale(.98); }
+
+/* covers the whole window, like a game does - not the browser's own fullscreen */
+.proxy-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: none;
+  background: #000;
+}
+
+.proxy-overlay.open { display: block; }
+
+.proxy-overlay iframe {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border: 0;
+  background: #050507;
+}
+
+body.proxy-open { overflow: hidden; }
+
 /* ---------- glass cards ---------- */
 
 .grid {

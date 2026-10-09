@@ -12,22 +12,125 @@
 
 <header class="hero">
   <h1>m's games and stuff</h1>
+
+  <button type="button" class="proxy-launch" id="launch">proxy (beta)</button>
 </header>
 
 <!-- filled in from games.json, alphabetical -->
 <main class="grid" id="grid"></main>
 <p class="empty-note" id="note" hidden></p>
 
+<!--
+  proxy (beta) is a whole second app with its own service worker, so it is not
+  started until the button is pressed: src comes from data-src. it covers the
+  window like a game does, not the browser's own fullscreen.
+-->
+<div class="proxy-overlay" id="proxyOverlay" aria-hidden="true">
+  <iframe id="proxy" title="proxy (beta)" data-src="browser/"
+          allow="cross-origin-isolated; fullscreen; autoplay; clipboard-read; clipboard-write"
+          allowfullscreen></iframe>
+</div>
+
 <!-- games open in here, on top of the hub -->
 <div class="game-overlay" id="overlay" aria-hidden="true">
   <iframe id="frame" title="game" allow="autoplay; fullscreen; gamepad; encrypted-media" allowfullscreen></iframe>
 </div>
+
+<!-- the fetch layer: every request is tried against the page's own origin and
+     then each mirror, so one dead cdn costs a retry instead of the page -->
+<script src="mirrors.js"></script>
 
 <script>
 const grid = document.getElementById("grid");
 const note = document.getElementById("note");
 const overlay = document.getElementById("overlay");
 const frame = document.getElementById("frame");
+const proxyFrame = document.getElementById("proxy");
+const proxyOverlay = document.getElementById("proxyOverlay");
+
+function openProxy() {
+  proxyOverlay.classList.add("open");
+  proxyOverlay.setAttribute("aria-hidden", "false");
+  document.body.classList.add("proxy-open");
+  if (!proxyFrame.src) proxyFrame.src = proxyFrame.dataset.src;
+}
+
+function closeProxy() {
+  proxyOverlay.classList.remove("open");
+  proxyOverlay.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("proxy-open");
+}
+
+document.getElementById("launch").addEventListener("click", openProxy);
+
+// the proxy asks to be closed when escape is pressed inside it - a site that
+// grabs the keyboard would otherwise leave no way back to the games
+window.addEventListener("message", (e) => {
+  if (e.data && e.data.proxyOverlayClose) closeProxy();
+});
+
+/*
+  the cdn failover layer.
+
+  mirrors.js owns the mirror list and tries each cdn in turn. it is optional:
+  every call below falls back to a plain same-origin fetch if it never loaded,
+  which is also what keeps this working when you open the folder over file://.
+*/
+function loadText(path) {
+  if (window.MSG) return MSG.fetchText(path);
+  return fetch(path, { cache: "no-store" })
+    .then(function (r) {
+      if (!r.ok) throw new Error(path + " -> " + r.status);
+      return r.text();
+    })
+    .then(function (text) {
+      return { text: text, url: new URL(path, document.baseURI).href, base: "", tried: -1, failed: [] };
+    });
+}
+
+function loadJson(path) {
+  return loadText(path).then(function (hit) { return JSON.parse(hit.text); });
+}
+
+// proxy.js is the worker that repairs content types and fails over between
+// mirrors for the game's own files. the svg entry point registers it in the cdn
+// case, where it is the real top-level document; here we cover the plain-html
+// case. nothing below depends on it - it is a nicety on top of mirrors.js.
+function startProxy() {
+  if (!("serviceWorker" in navigator)) return;
+  if (location.protocol === "about:") return; // inside the svg's frame; that registers
+  try {
+    navigator.serviceWorker.register("sw.js", { updateViaCache: "none" })
+      .then(function () { return navigator.serviceWorker.ready; })
+      .then(function () {
+        if (navigator.serviceWorker.controller) return;
+        return new Promise(function (r) {
+          navigator.serviceWorker.addEventListener("controllerchange", r, { once: true });
+          setTimeout(r, 3000);
+        });
+      })
+      .then(report)
+      .catch(function (err) { console.warn("[proxy] worker not registered:", err.message); });
+  } catch (err) {
+    console.warn("[proxy] worker not registered:", err.message);
+  }
+}
+
+// what the proxy is actually doing, in the console
+function report() {
+  const worker = navigator.serviceWorker && navigator.serviceWorker.controller;
+  if (!worker) return;
+  const channel = new MessageChannel();
+  channel.port1.onmessage = function (e) {
+    const s = e.data || {};
+    console.info(
+      "[proxy] v" + s.version + " over " + s.root + " - " + s.mirrors + " mirror(s), " +
+      s.served + " served, " + s.retyped + " retyped, " + s.fromMirror + " from a fallback"
+    );
+  };
+  worker.postMessage({ type: "msg:status" }, [channel.port2]);
+}
+window.proxyStatus = report;
 
 // a game that already ships its own <base> (pulling assets from a cdn) keeps it.
 // the check has to be a real parse: page source can contain the literal tag text.
@@ -57,22 +160,22 @@ function openGame(src, name) {
   // a game is fetched and then handed to the frame rather than pointed at with
   // src, because a cdn (jsDelivr) serves .html as text/plain - an iframe pointed
   // at it would show the game's source code instead of running it.
-  var url = new URL(src, document.baseURI);
-  var dir = new URL("./", url).href;
   frame.removeAttribute("srcdoc");
   frame.removeAttribute("src");
 
-  fetch(url.href, { cache: "no-store" })
-    .then(function (r) {
-      if (!r.ok) throw new Error(r.status);
-      return r.text();
-    })
-    .then(function (html) {
-      // the game's own relative files (sprites, music) sit beside it
-      frame.srcdoc = withBase(html, dir);
+  // fetched through the proxy first. a dead cdn then means the next mirror
+  // rather than a blank box, and the url that answered is what the game's own
+  // relative files (sprites, music) get pointed at.
+  loadText(src)
+    .then(function (hit) {
+      var dir = new URL("./", hit.url).href;
+      frame.srcdoc = withBase(hit.text, dir);
+      if (hit.tried > 0) console.info("[proxy] " + src + " came from " + (hit.base || "a mirror"));
     })
     .catch(function () {
-      frame.src = src; // plain navigation - the local file:// case, mostly
+      // with the worker in place the url can just be pointed at: proxy.js turns
+      // it back into text/html on the way past, which is what jsDelivr refuses to do
+      frame.src = src;
     });
 }
 
@@ -125,12 +228,11 @@ function buildCard(g, i) {
   return card;
 }
 
-// cache-buster so a freshly added game shows up on the next refresh, even behind a CDN
-fetch("games.json?v=" + Date.now(), { cache: "no-store" })
-  .then((r) => {
-    if (!r.ok) throw new Error("games.json -> " + r.status);
-    return r.json();
-  })
+// through the proxy: the hourly cache-buster in mirrors.js is what keeps a
+// freshly added game from being hidden behind a cdn, and a blocked cdn just
+// moves on to the next one. also the last thing done on load, so the list is
+// never waiting on the worker.
+loadJson("games.json")
   .then((games) => {
     games.sort((a, b) => a.name.localeCompare(b.name));
     if (!games.length) {
@@ -144,6 +246,8 @@ fetch("games.json?v=" + Date.now(), { cache: "no-store" })
     note.textContent = "couldn't read the games list — run start.bat (or serve.py), then refresh";
     note.hidden = false;
   });
+
+startProxy();
 </script>
 </body>
 </html>
