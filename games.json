@@ -1,5 +1,11 @@
 [
   {
+    "slug": "Gang Beasts",
+    "name": "gang beasts",
+    "game": "games/Gang Beasts.html",
+    "img": "games/Gang Beasts.jpg"
+  },
+  {
     "slug": "geometry-dash",
     "name": "geometry dash",
     "game": "games/geometry-dash.html",
