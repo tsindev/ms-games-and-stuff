@@ -12,7 +12,11 @@
 
 <header class="hero">
   <h1>m's games and stuff</h1>
-<!-- proxy is scrapped ok --!>
+</header>
+
+<!-- proxy is scrapped, ok: it needs its own service worker, and jsdelivr
+     will not serve a second app out of the repo. the overlay below is left
+     in the markup, but nothing points at it any more. -->
 
 <!-- filled in from games.json, alphabetical -->
 <main class="grid" id="grid"></main>
@@ -59,7 +63,11 @@ function closeProxy() {
   document.body.classList.remove("proxy-open");
 }
 
-document.getElementById("launch").addEventListener("click", openProxy);
+// the launch button is gone with the proxy, so this is wired up only if the
+// button is really in the markup - a missing button must never take the game
+// list down with it (it used to: the throw below killed everything after it)
+const launch = document.getElementById("launch");
+if (launch) launch.addEventListener("click", openProxy);
 
 // the proxy asks to be closed when escape is pressed inside it - a site that
 // grabs the keyboard would otherwise leave no way back to the games

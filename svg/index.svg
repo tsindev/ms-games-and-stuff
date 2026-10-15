@@ -23,8 +23,20 @@
         if (t) t.textContent = "Could not load page: " + msg;
       }
 
-      function ensureBase(html, href) {
-        if (/<base[\s>]/i.test(html)) return html;
+      // ask the parser whether a <base> tag is really there. a substring check
+      // is fooled by page source that merely mentions the tag - index.html does,
+      // in a comment, so the naive test skipped the real insertion and every
+      // relative path in the frame resolved against /svg/ instead of the root.
+      function hasBase(html) {
+        try {
+          return !!new DOMParser().parseFromString(html, "text/html").querySelector("base");
+        } catch (e) {
+          return true; // cannot tell: leave the html alone
+        }
+      }
+
+function ensureBase(html, href) {
+        if (hasBase(html)) return html;
         var tag = '<base href="' + href + '">';
         return /<head[^>]*>/i.test(html)
           ? html.replace(/<head[^>]*>/i, function (m) {
