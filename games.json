@@ -10,5 +10,11 @@
     "name": "geometry dash",
     "game": "games/geometry-dash.html",
     "img": "games/geometry-dash.png"
+  },
+  {
+    "slug": "Retro Bowl",
+    "name": "retro bowl",
+    "game": "games/Retro Bowl.html",
+    "img": "games/Retro Bowl.png"
   }
 ]
