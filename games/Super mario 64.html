@@ -1,0 +1,43 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Super Mario 64</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+    header {
+      padding: 12px;
+      text-align: center;
+      background: #111;
+    }
+    #game {
+      width: 100%;
+      height: calc(100%);
+    }
+  </style>
+</head>
+<body>
+  <div id="game"></div>
+
+  <script>
+    window.EJS_player = "#game";
+    window.EJS_core = "n64";
+    window.EJS_gameName = "Super Mario 64";
+    window.EJS_pathtodata =
+      "https://cdn.emulatorjs.org/stable/data/";
+    window.EJS_gameUrl = "https://cdn.jsdelivr.net/gh/bubblfan/clsm64@main/Super%20Mario%2064%20(USA).zip";
+  </script>
+
+  <script src="https://cdn.emulatorjs.org/stable/data/loader.js"></script>
+</body>
+</html>
