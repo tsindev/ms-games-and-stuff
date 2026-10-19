@@ -1,5 +1,11 @@
 [
   {
+    "slug": "Eaglercraft",
+    "name": "eaglercraft",
+    "game": "games/Eaglercraft.html",
+    "img": null
+  },
+  {
     "slug": "Gang Beasts",
     "name": "gang beasts",
     "game": "games/Gang Beasts.html",
