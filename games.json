@@ -1,9 +1,21 @@
 [
   {
+    "slug": "doki doki literature club",
+    "name": "doki doki literature club",
+    "game": "games/doki doki literature club.html",
+    "img": "games/doki doki literature club.jpg"
+  },
+  {
     "slug": "Eaglercraft",
     "name": "eaglercraft",
     "game": "games/Eaglercraft.html",
     "img": "games/Eaglercraft.jpg"
+  },
+  {
+    "slug": "Escape Road",
+    "name": "escape road",
+    "game": "games/Escape Road.html",
+    "img": "games/Escape Road.webp"
   },
   {
     "slug": "Gang Beasts",
@@ -22,5 +34,11 @@
     "name": "retro bowl",
     "game": "games/Retro Bowl.html",
     "img": "games/Retro Bowl.png"
+  },
+  {
+    "slug": "Super mario 64",
+    "name": "super mario 64",
+    "game": "games/Super mario 64.html",
+    "img": "games/Super mario 64.jpg"
   }
 ]
