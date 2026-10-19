@@ -214,7 +214,11 @@ body.proxy-open { overflow: hidden; }
 
 .card .thumb.has-img {
   display: block;
-  height: 172px;
+  /* square: the pictures are all 1:1 logos, so give the slot the same shape
+     instead of a fixed height that crops them into a letterbox */
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  height: auto;
   border-radius: 18px;
   margin-bottom: 1rem;
   background-color: #0a0a0e;
