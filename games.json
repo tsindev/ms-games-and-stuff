@@ -1,11 +1,5 @@
 [
   {
-    "slug": "doki doki literature club",
-    "name": "doki doki literature club",
-    "game": "games/doki doki literature club.html",
-    "img": "games/doki doki literature club.jpg"
-  },
-  {
     "slug": "Eaglercraft",
     "name": "eaglercraft",
     "game": "games/Eaglercraft.html",
